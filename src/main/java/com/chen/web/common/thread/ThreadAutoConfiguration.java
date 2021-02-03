@@ -24,9 +24,10 @@ public class ThreadAutoConfiguration {
     @Bean(value = "threadPool")
     public ThreadPoolExecutor buildThreadPool() {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("async-queue-thread-%d").build();
+                .setNameFormat("resizeable-queue-thread-%d").build();
         ThreadPoolExecutor pool = new ThreadPoolExecutor(5, 5, 0L, TimeUnit.MILLISECONDS,
                 new ResizeableCapacityLinkedBlockingQueue<>(5), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+        pool.prestartAllCoreThreads();
         return pool;
     }
 

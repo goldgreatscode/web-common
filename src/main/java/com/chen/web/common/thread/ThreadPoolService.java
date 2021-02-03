@@ -1,14 +1,16 @@
 package com.chen.web.common.thread;
 
 import com.chen.common.utils.AsyncTask;
+import com.chen.web.common.thread.mode.request.ThreadResizeRequest;
+import com.chen.web.common.thread.queue.ResizeableCapacityLinkedBlockingQueue;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
+
 
 import javax.annotation.PostConstruct;
+import java.util.Queue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author cjw
@@ -22,6 +24,34 @@ public class ThreadPoolService {
         AsyncTask.setExecutor(threadPool);
     }
 
-    private Executor threadPool;
+    private ThreadPoolExecutor threadPool;
 
+    public void resize(ThreadResizeRequest request) {
+        if (request.getCorePoolSize() != null) {
+            resizeCorePoolSize(request.getCorePoolSize());
+        }
+        if (request.getMaximumPoolSize() != null) {
+            resizeMaximumPoolSize(request.getMaximumPoolSize());
+        }
+        if (request.getQueueCapacity() != null) {
+            resizeCapacitySize(request.getQueueCapacity());
+        }
+    }
+
+
+    public void resizeCorePoolSize(int corePoolSize) {
+        threadPool.setCorePoolSize(corePoolSize);
+    }
+
+    public void resizeMaximumPoolSize(int maximumPoolSize) {
+        threadPool.setMaximumPoolSize(maximumPoolSize);
+    }
+
+    public void resizeCapacitySize(int capacitySize) {
+        Queue queue = threadPool.getQueue();
+        if (queue instanceof ResizeableCapacityLinkedBlockingQueue) {
+            ResizeableCapacityLinkedBlockingQueue resizeableCapacityLinkedBlockingQueue = (ResizeableCapacityLinkedBlockingQueue) queue;
+            resizeableCapacityLinkedBlockingQueue.setCapacity(capacitySize);
+        }
+    }
 }
